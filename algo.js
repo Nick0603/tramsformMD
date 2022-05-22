@@ -12,22 +12,23 @@ class Node {
   }
 
   applyMarkup(markup) {
-    const { start, end, type } = markup;
+    const { start, end, type, ...options } = markup;
     let lastEnd = this.start;
     const newChildren = [];
     forEach(this.children, (child) => {
       if (typeof child === "string") {
-        let childStart = lastEnd + 1;
-        let childEnd = lastEnd + 1 + child.length;
+        let childStart = lastEnd;
+        let childEnd = lastEnd + child.length;
         const isInclude = !(childEnd < start || childStart > end);
         if (isInclude) {
           newChildren.push(child.substring(0, start - lastEnd));
           newChildren.push(
             new Node(
-              child.substring(start - lastEnd, end - this.start),
+              child.substring(start - lastEnd, end - lastEnd),
               start,
               end,
-              type
+              type,
+              options
             )
           );
           newChildren.push(child.substring(end - lastEnd));
@@ -68,8 +69,14 @@ class Node {
       return `\`${text}\``;
     }
 
+    if (this.type === "LINK") {
+      return `[${text}](${this.options.href})`;
+    }
+
     if (this.type === "STRONG") {
-      return `**${text}**`;
+      const spaceOnStart = text.match(/^( *)/)[0];
+      const spaceOnEnd = text.match(/( *)$/)[0];
+      return `${spaceOnStart}**${trim(text)}**${spaceOnEnd}`;
     }
 
     if (this.type === "EM") {

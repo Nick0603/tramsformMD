@@ -13,29 +13,29 @@ class Node {
 
   applyMarkup(markup) {
     const { start, end, type, ...options } = markup;
-    let lastEnd = this.start;
+    let iterator = this.start;
     const newChildren = [];
     forEach(this.children, (child) => {
       if (typeof child === "string") {
-        let childStart = lastEnd;
-        let childEnd = lastEnd + child.length;
+        let childStart = iterator;
+        let childEnd = iterator + child.length;
         const isInclude = !(childEnd < start || childStart > end);
         if (isInclude) {
-          newChildren.push(child.substring(0, start - lastEnd));
+          newChildren.push(child.substring(0, start - iterator));
           newChildren.push(
             new Node(
-              child.substring(start - lastEnd, end - lastEnd),
+              child.substring(start - iterator, end - iterator),
               start,
               end,
               type,
               options
             )
           );
-          newChildren.push(child.substring(end - lastEnd));
+          newChildren.push(child.substring(end - iterator));
         } else {
           newChildren.push(child);
         }
-        lastEnd += child.length;
+        iterator += child.length;
       }
       if (child instanceof Node) {
         const isInclude = !(child.end < start || child.start > end);
@@ -43,14 +43,14 @@ class Node {
           child.applyMarkup(markup);
         }
         newChildren.push(child);
-        lastEnd = child.end;
+        iterator = child.end;
       }
     });
     this.children = filter(
       newChildren,
       (child) => !isNil(child) && child !== ""
     );
-    console.debug(lastEnd, type, JSON.stringify(this.children, null, 2));
+    console.debug(iterator, type, JSON.stringify(this.children, null, 2));
     return this.children;
   }
 
